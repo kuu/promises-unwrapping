@@ -1,42 +1,48 @@
-# States and Fates
+*This is a Japanese translation from [the original document in English][original].*
+*原文:[States and Fates by Domenic Denicola][original]*
 
-This document helps clarify the different adjectives surrounding promises, by dividing them up into two categories: *states* and *fates*.
+[original]: https://github.com/domenic/promises-unwrapping/blob/master/docs/states-and-fates.md
 
-## Overview and Operational Definitions
+======
+# State と Fate
 
-### States
+この文書は Promise とともによく使われるいつくかの形容詞の意味を明確にするためのものです。そのために、ここではそれらの用語を２つのカテゴリー、State と Fate に分類します。
 
-Promises have three possible mutually exclusive states: fulfilled, rejected, and pending.
+## 概要および運用上の定義
 
-- A promise is *fulfilled* if `promise.then(f)` will call `f` "as soon as possible."
-- A promise is *rejected* if `promise.then(undefined, r)` will call `r` "as soon as possible."
-- A promise is *pending* if it is neither fulfilled nor rejected.
+### State
 
-We say that a promise is *settled* if it is not pending, i.e. if it is either fulfilled or rejected. Being settled is not a state, just a linguistic convenience.
+Promise は３つの相互排他的な State を持ちます。すなわち、fulfilled、rejected、pending です。
 
-### Fates
+- `promise.then(f)` の呼び出しにおいて、`f` が「すぐさま」呼び出される場合、promise は *fulfilled* である。
+- `promise.then(undefined, r)` の呼び出しにおいて、`r` が「すぐさま」呼び出される場合、promise は *rejected* である。
+- fulfilled でも rejected でもない場合、promise は *pending* である。
 
-Promises have two possible mutually exclusive fates: resolved, and unresolved.
+pending でない場合、つまり fulfilled か rejected のどちらかである場合、promise は *settled* であると言いいます。settled は便宜上の用語であり、State ではありません。
 
-- A promise is *resolved* if trying to resolve or reject it has no effect, i.e. the promise has been "locked in" to either follow another promise, or has been fulfilled or rejected.
-- A promise is *unresolved* if it is not resolved, i.e. if trying to resolve or reject it will have an impact on the promise.
+### Fate
 
-A promise can be "resolved to" either a promise or thenable, in which case it will store the promise or thenable for later unwrapping; or it can be resolved to a non-promise value, in which case it is fulfilled with that value.
+Promise は２つの相互排他的な Fate を持ちます。すなわち、resolved と unresolved です。
 
-### Relating States and Fates
+- promise を resolve もしくは reject しても何の効果も無い場合、すなわち、すでに fulfilled か rejected であるか、もしくは他の promise を待つために「固定」されている場合、promise は *resolved* である。
+- resolve されていない場合、つまり promise を resolve もしくは reject すれば何らかの効果がある場合、promise は *unresolved* である。
 
-A promise whose fate is resolved can be in any of the three states:
+promise は 別の promise もしくは thenable に resolve されるか、非 promise の値に resolve されます。前者の場合、promise もしくは thenable は後で処理されるまで保持されます。後者の場合、非 promise の値で fulfill されます。
 
-- Fulfilled, if it has been resolved to a non-promise value, or resolved to a thenable which will call any passed fulfillment handler back as soon as possible, or resolved to another promise that is fulfilled.
-- Rejected, if it has been rejected directly, or resolved to a thenable which will call any passed rejection handler back as soon as possible, or resolved to another promise that is rejected.
-- Pending, if it has been resolved to a thenable which will call neither handler back as soon as possible, or resolved to another promise that is pending.
+### State と Fate の関係
 
-A promise whose fate is unresolved is necessarily pending.
+promise の Fate が resolved の場合、State は以下のいずれかになります。
 
-Note that these relations are recursive, e.g. a promise that has been resolved to a thenable which will call its fulfillment handler with a promise that has been rejected is itself rejected.
+- 非 promise の値に resolve された場合、もしくは thenable に resolve されたがすぐさま引数の fulfill コールバック関数が呼ばれた場合、もしくは他のすでに fulfill された promise に resolve された場合、State は fulfilled になります。
+- 直接 reject されたか、もしくは thenable にresolve されたがすぐさま引数の reject コールバック関数が呼ばれた場合、もしくは他のすでに reject された promise に resolve された場合、State は rejected になります。
+- thenable に resolve されたがすぐさまコールバック関数が呼ばれない場合、もしくは他の pending の promise に resolve された場合、State は pending になります。
 
-## Relation to the Spec
+promise の Fate が unresolved の場合、State は必然的に pending になります。
 
-A promise's state is reflected in its [[PromiseState]] internal slot.
+これらの関係は再帰的です。たとえば、thenable に resolve されて、すぐさま fulfill コールバック関数が呼ばれたが、渡された値がすでに reject された promise であった場合、State は rejected になります。
 
-A promise's fate is stored implicitly as part of its "resolving functions."
+## 仕様との関係
+
+promise の State は仕様の [[PromiseState]] internal slot に対応します。
+
+promise の Fate は暗黙的に "resolving function" の一部として保持されています。
